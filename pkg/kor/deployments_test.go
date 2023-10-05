@@ -3,7 +3,10 @@ package kor
 import (
 	"context"
 	"encoding/json"
+	"io"
+	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -85,6 +88,37 @@ func TestGetUnusedDeploymentsStructured(t *testing.T) {
 
 	if !reflect.DeepEqual(expectedOutput, actualOutput) {
 		t.Errorf("Expected output does not match actual output")
+	}
+}
+
+func TestGetUnusedDeployments(t *testing.T) {
+	clientset := createTestDeployments(t)
+
+	includeExcludeLists := IncludeExcludeLists{
+		IncludeListStr: "",
+		ExcludeListStr: "",
+	}
+
+	slackOptions := SlackOpts{
+		WebhookURL: "",
+		Channel:    "",
+		Token:      "",
+	}
+
+	rescueStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	GetUnusedDeployments(includeExcludeLists, clientset, slackOptions)
+
+	w.Close()
+	out, _ := io.ReadAll(r)
+	os.Stdout = rescueStdout
+
+	output := string(out)
+
+	if !strings.Contains(output, "test-deployment1") {
+		t.Errorf("Expected output to contain deployment name %s, but it didn't:\n%s", "test-deployment1", out)
 	}
 }
 

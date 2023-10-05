@@ -27,9 +27,9 @@ func retrieveNamespaceDiffs(clientset kubernetes.Interface, namespace string, re
 		case "sa", "serviceaccount", "serviceaccounts":
 			namespaceSADiff := getUnusedServiceAccounts(clientset, namespace)
 			allDiffs = append(allDiffs, namespaceSADiff)
-		case "deploy", "deployment", "deployments":
-			namespaceDeploymentDiff := getUnusedDeployments(clientset, namespace)
-			allDiffs = append(allDiffs, namespaceDeploymentDiff)
+		/*case "deploy", "deployment", "deployments":
+		namespaceDeploymentDiff := getUnusedDeployments(clientset, namespace)
+		allDiffs = append(allDiffs, namespaceDeploymentDiff)*/
 		case "sts", "statefulset", "statefulsets":
 			namespaceStatefulsetDiff := getUnusedStatefulSets(clientset, namespace)
 			allDiffs = append(allDiffs, namespaceStatefulsetDiff)

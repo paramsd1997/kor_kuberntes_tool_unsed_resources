@@ -3,30 +3,33 @@ package kor
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"sigs.k8s.io/yaml"
 )
 
-func ProcessNamespaceDeployments(clientset kubernetes.Interface, namespace string) ([]string, error) {
+func ProcessNamespaceDeployments(clientset kubernetes.Interface, namespace string) ([]UnusedResource, error) {
 	deploymentsList, err := clientset.AppsV1().Deployments(namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	var deploymentsWithoutReplicas []string
+	var deploymentsWithoutReplicas []UnusedResource
 
 	for _, deployment := range deploymentsList.Items {
+
 		if deployment.Labels["kor/used"] == "true" {
 			continue
 		}
 
 		if *deployment.Spec.Replicas == 0 {
-			deploymentsWithoutReplicas = append(deploymentsWithoutReplicas, deployment.Name)
+			unusedDeployment := UnusedResource{
+				Name:   deployment.Name,
+				Reason: "Unused",
+			}
+			deploymentsWithoutReplicas = append(deploymentsWithoutReplicas, unusedDeployment)
 		}
 	}
 
@@ -44,7 +47,7 @@ func GetUnusedDeployments(includeExcludeLists IncludeExcludeLists, clientset kub
 			fmt.Fprintf(os.Stderr, "Failed to process namespace %s: %v\n", namespace, err)
 			continue
 		}
-		output := FormatOutput(namespace, diff, "Deployments")
+		output := FormatOutputNew(namespace, diff, "Deployments")
 
 		outputBuffer.WriteString(output)
 		outputBuffer.WriteString("\n")
@@ -60,7 +63,7 @@ func GetUnusedDeployments(includeExcludeLists IncludeExcludeLists, clientset kub
 	}
 }
 
-func GetUnusedDeploymentsStructured(includeExcludeLists IncludeExcludeLists, clientset kubernetes.Interface, outputFormat string) (string, error) {
+/*func GetUnusedDeploymentsStructured(includeExcludeLists IncludeExcludeLists, clientset kubernetes.Interface, outputFormat string) (string, error) {
 	namespaces := SetNamespaceList(includeExcludeLists, clientset)
 	response := make(map[string]map[string][]string)
 
@@ -89,4 +92,4 @@ func GetUnusedDeploymentsStructured(includeExcludeLists IncludeExcludeLists, cli
 	} else {
 		return string(jsonResponse), nil
 	}
-}
+}*/

@@ -21,6 +21,11 @@ type ExceptionResource struct {
 	ResourceName string
 	Namespace    string
 }
+
+type UnusedResource struct {
+	Name   string
+	Reason string
+}
 type IncludeExcludeLists struct {
 	IncludeListStr string
 	ExcludeListStr string
@@ -130,10 +135,28 @@ func FormatOutput(namespace string, resources []string, resourceType string) str
 
 	var buf bytes.Buffer
 	table := tablewriter.NewWriter(&buf)
-	table.SetHeader([]string{"#", "Resource Name"})
+	table.SetHeader([]string{"#", "Resource Name", "Reason"})
 
 	for i, name := range resources {
 		table.Append([]string{fmt.Sprintf("%d", i+1), name})
+	}
+
+	table.Render()
+
+	return fmt.Sprintf("Unused %s in Namespace: %s\n%s", resourceType, namespace, buf.String())
+}
+
+func FormatOutputNew(namespace string, resources []UnusedResource, resourceType string) string {
+	if len(resources) == 0 {
+		return fmt.Sprintf("No unused %s found in the namespace: %s", resourceType, namespace)
+	}
+
+	var buf bytes.Buffer
+	table := tablewriter.NewWriter(&buf)
+	table.SetHeader([]string{"#", "Resource Name", "Reason"})
+
+	for i, resource := range resources {
+		table.Append([]string{fmt.Sprintf("%d", i+1), resource.Name, resource.Reason})
 	}
 
 	table.Render()

@@ -56,14 +56,14 @@ func getUnusedServiceAccounts(clientset kubernetes.Interface, namespace string) 
 	return namespaceSADiff
 }
 
-func getUnusedDeployments(clientset kubernetes.Interface, namespace string) ResourceDiff {
+/*func getUnusedDeployments(clientset kubernetes.Interface, namespace string) ResourceDiff {
 	deployDiff, err := ProcessNamespaceDeployments(clientset, namespace)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to get %s namespace %s: %v\n", "deployments", namespace, err)
 	}
 	namespaceSADiff := ResourceDiff{"Deployment", deployDiff}
 	return namespaceSADiff
-}
+}*/
 
 func getUnusedStatefulSets(clientset kubernetes.Interface, namespace string) ResourceDiff {
 	stsDiff, err := ProcessNamespaceStatefulSets(clientset, namespace)
@@ -134,8 +134,8 @@ func GetUnusedAll(includeExcludeLists IncludeExcludeLists, clientset kubernetes.
 		allDiffs = append(allDiffs, namespaceSecretDiff)
 		namespaceSADiff := getUnusedServiceAccounts(clientset, namespace)
 		allDiffs = append(allDiffs, namespaceSADiff)
-		namespaceDeploymentDiff := getUnusedDeployments(clientset, namespace)
-		allDiffs = append(allDiffs, namespaceDeploymentDiff)
+		/*namespaceDeploymentDiff := getUnusedDeployments(clientset, namespace)
+		allDiffs = append(allDiffs, namespaceDeploymentDiff)*/
 		namespaceStatefulsetDiff := getUnusedStatefulSets(clientset, namespace)
 		allDiffs = append(allDiffs, namespaceStatefulsetDiff)
 		namespaceRoleDiff := getUnusedRoles(clientset, namespace)
@@ -186,8 +186,8 @@ func GetUnusedAllStructured(includeExcludeLists IncludeExcludeLists, clientset k
 		namespaceSADiff := getUnusedServiceAccounts(clientset, namespace)
 		allDiffs = append(allDiffs, namespaceSADiff)
 
-		namespaceDeploymentDiff := getUnusedDeployments(clientset, namespace)
-		allDiffs = append(allDiffs, namespaceDeploymentDiff)
+		/*namespaceDeploymentDiff := getUnusedDeployments(clientset, namespace)
+		allDiffs = append(allDiffs, namespaceDeploymentDiff)*/
 
 		namespaceStatefulsetDiff := getUnusedStatefulSets(clientset, namespace)
 		allDiffs = append(allDiffs, namespaceStatefulsetDiff)
