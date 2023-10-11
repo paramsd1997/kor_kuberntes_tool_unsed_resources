@@ -2,7 +2,10 @@
 ![GitHub release (with filter)](https://img.shields.io/github/v/release/yonahd/kor?color=green&link=https://github.com/yonahd/kor/releases)
 [![codecov](https://codecov.io/gh/yonahd/kor/branch/main/graph/badge.svg?token=tNKcOjlxLo)](https://codecov.io/gh/yonahd/kor)
 
+
 # Kor - Kubernetes Orphaned Resources Finder
+
+![Kor Logo](/images/kor_logo.png)
 
 Kor is a tool to discover unused Kubernetes resources. Currently, Kor can identify and list unused:
 - ConfigMaps  
@@ -42,6 +45,17 @@ docker run --rm -i yonahdissen/kor
 docker run --rm -i -v "/path/to/.kube/config:/root/.kube/config" yonahdissen/kor all
 ```
 
+### Helm
+Run as a cronjob in your Cluster
+```sh
+helm upgrade -i kor \
+    --namespace kor \
+    --create-namespace \
+    ./charts/kor
+```
+
+For more information see [in cluster usage](#in-cluster-usage) 
+
 ## Usage
 
 Kor provides various subcommands to identify and list unused resources. The available commands are:
@@ -58,6 +72,7 @@ Kor provides various subcommands to identify and list unused resources. The avai
 - `pvc` - Gets unused PVCs for the specified namespace or all namespaces.
 - `ingress` - Gets unused Ingresses for the specified namespace or all namespaces.
 - `pdb` - Gets unused PDBs for the specified namespace or all namespaces.
+- `exporter` - Export Prometheus metrics.
 
 ### Supported Flags
 ```
