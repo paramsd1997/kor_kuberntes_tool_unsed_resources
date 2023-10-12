@@ -3,11 +3,13 @@ package kor
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/yaml"
 )
 
 func ProcessNamespaceDeployments(clientset kubernetes.Interface, namespace string) ([]UnusedResource, error) {
@@ -24,10 +26,19 @@ func ProcessNamespaceDeployments(clientset kubernetes.Interface, namespace strin
 			continue
 		}
 
+		if deployment.Labels["kor/used"] == "false" {
+			unusedDeployment := UnusedResource{
+				Name:   deployment.Name,
+				Reason: "Label kor/used set to false",
+			}
+			deploymentsWithoutReplicas = append(deploymentsWithoutReplicas, unusedDeployment)
+			continue
+		}
+
 		if *deployment.Spec.Replicas == 0 {
 			unusedDeployment := UnusedResource{
 				Name:   deployment.Name,
-				Reason: "Unused",
+				Reason: "No resource using this Deployment",
 			}
 			deploymentsWithoutReplicas = append(deploymentsWithoutReplicas, unusedDeployment)
 		}
@@ -63,9 +74,9 @@ func GetUnusedDeployments(includeExcludeLists IncludeExcludeLists, clientset kub
 	}
 }
 
-/*func GetUnusedDeploymentsStructured(includeExcludeLists IncludeExcludeLists, clientset kubernetes.Interface, outputFormat string) (string, error) {
+func GetUnusedDeploymentsStructured(includeExcludeLists IncludeExcludeLists, clientset kubernetes.Interface, outputFormat string) (string, error) {
 	namespaces := SetNamespaceList(includeExcludeLists, clientset)
-	response := make(map[string]map[string][]string)
+	response := make(map[string]map[string][]UnusedResource)
 
 	for _, namespace := range namespaces {
 		diff, err := ProcessNamespaceDeployments(clientset, namespace)
@@ -73,7 +84,7 @@ func GetUnusedDeployments(includeExcludeLists IncludeExcludeLists, clientset kub
 			fmt.Fprintf(os.Stderr, "Failed to process namespace %s: %v\n", namespace, err)
 			continue
 		}
-		resourceMap := make(map[string][]string)
+		resourceMap := make(map[string][]UnusedResource)
 		resourceMap["Deployments"] = diff
 		response[namespace] = resourceMap
 	}
@@ -92,4 +103,4 @@ func GetUnusedDeployments(includeExcludeLists IncludeExcludeLists, clientset kub
 	} else {
 		return string(jsonResponse), nil
 	}
-}*/
+}

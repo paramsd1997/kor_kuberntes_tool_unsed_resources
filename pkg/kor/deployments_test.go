@@ -57,7 +57,7 @@ func TestProcessNamespaceDeployments(t *testing.T) {
 		t.Errorf("Expected 1 deployment without replicas, got %d", len(deploymentsWithoutReplicas))
 	}
 
-	if deploymentsWithoutReplicas[0] != "test-deployment1" {
+	if deploymentsWithoutReplicas[0].Name != "test-deployment1" {
 		t.Errorf("Expected 'test-deployment1', got %s", deploymentsWithoutReplicas[0])
 	}
 }
@@ -75,13 +75,18 @@ func TestGetUnusedDeploymentsStructured(t *testing.T) {
 		t.Fatalf("Error calling GetUnusedDeploymentsStructured: %v", err)
 	}
 
-	expectedOutput := map[string]map[string][]string{
+	expectedOutput := map[string]map[string][]UnusedResource{
 		testNamespace: {
-			"Deployments": {"test-deployment1"},
+			"Deployments": []UnusedResource{
+				{
+					Name:   "test-deployment1",
+					Reason: "No resource using this Deployment",
+				},
+			},
 		},
 	}
 
-	var actualOutput map[string]map[string][]string
+	var actualOutput map[string]map[string][]UnusedResource
 	if err := json.Unmarshal([]byte(output), &actualOutput); err != nil {
 		t.Fatalf("Error unmarshaling actual output: %v", err)
 	}
